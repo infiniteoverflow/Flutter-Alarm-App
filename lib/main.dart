@@ -1,11 +1,21 @@
+import 'dart:async';
 import 'dart:isolate';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:android_alarm_manager/android_alarm_manager.dart';
+import 'package:alarm_clock/models/model.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'models/digital_clock.dart';
 
 
-void main() => runApp(MyApp());
+void main() async {
+  runApp(MyApp());
+  await AndroidAlarmManager.initialize();
+
+  print("AndroidAlarmManager initialized!");
+}
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -55,12 +65,56 @@ class _MyHomePageState extends State<MyHomePage> {
   TimeOfDay _time = TimeOfDay.now();
   TimeOfDay picked;
 
+  DateTime _dateTime = DateTime.now();
+  Timer _timer;
+
   var alarmId = 0;
+
+  bool play = true;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    _updateTime();
+  }
+
+  void _updateTime() {
+    setState(() {
+      _dateTime = DateTime.now();
+      // Update once per minute. If you want to update every second, use the
+      // following code.
+//      _timer = Timer(
+//        Duration(minutes: 1) -
+//            Duration(seconds: _dateTime.second) -
+//            Duration(milliseconds: _dateTime.millisecond),
+//        _updateTime,
+      _timer = Timer(
+        Duration(seconds: 1) - Duration(milliseconds: _dateTime.millisecond),
+        _updateTime,
+      );
+      // Update once per second, but make sure to do it at the beginning of each
+      // new second, so that the clock is accurate.
+//       _timer = Timer(
+//         Duration(seconds: 1) - Duration(milliseconds: _dateTime.millisecond),
+//         _updateTime,
+//       );
+      print(_dateTime.minute);
+    print(_dateTime.second);
+      print(_time.minute);
+
+    if(_dateTime.minute == _time.minute && _dateTime.hour == _time.hour && play) {
+      print("f");
+      print(play);
+      if (play)
+        FlutterRingtonePlayer.playRingtone();
+      //this.play = false;
+    }
+    else if(_dateTime.minute != _time.minute || _dateTime.hour != _time.hour)
+      print("hhhh");
+      FlutterRingtonePlayer.stop();
+
+    });
   }
 
   @override
@@ -109,7 +163,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   this.switch_value = state;
                   print(switch_value);
                   if(switch_value)
-                    FlutterRingtonePlayer.playRingtone();
+                    alarm(context);
                   else
                     FlutterRingtonePlayer.stop();
                 });
@@ -141,6 +195,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<Null> alarm(BuildContext context) async {
+    print("hello");
     await AndroidAlarmManager.periodic(const Duration(minutes: 1), alarmId, printHello);
   }
 
