@@ -4,10 +4,6 @@ import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:android_alarm_manager/android_alarm_manager.dart';
-import 'package:alarm_clock/models/model.dart';
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'models/digital_clock.dart';
 
 
 void main() async {
@@ -22,6 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
         // This is the theme of your application.
@@ -71,6 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
   var alarmId = 0;
 
   bool play = true;
+  int flag = 0;
 
   @override
   void initState() {
@@ -99,21 +97,20 @@ class _MyHomePageState extends State<MyHomePage> {
 //         Duration(seconds: 1) - Duration(milliseconds: _dateTime.millisecond),
 //         _updateTime,
 //       );
-      print(_dateTime.minute);
-    print(_dateTime.second);
-      print(_time.minute);
 
-    if(_dateTime.minute == _time.minute && _dateTime.hour == _time.hour && play) {
-      print("f");
+
+    if(_dateTime.minute == _time.minute && _dateTime.hour == _time.hour && flag==0 && switch_value) {
       print(play);
-      if (play)
+      flag++;
+      if (flag==1) {
         FlutterRingtonePlayer.playRingtone();
+      }
       //this.play = false;
     }
-    else if(_dateTime.minute != _time.minute || _dateTime.hour != _time.hour)
-      print("hhhh");
+    else if(_dateTime.minute != _time.minute || _dateTime.hour != _time.hour) {
       FlutterRingtonePlayer.stop();
-
+      flag = 0;
+    }
     });
   }
 
@@ -163,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   this.switch_value = state;
                   print(switch_value);
                   if(switch_value)
-                    alarm(context);
+                    FlutterRingtonePlayer.playRingtone();
                   else
                     FlutterRingtonePlayer.stop();
                 });
